@@ -44,41 +44,41 @@ window.findNRooksSolution = function(n) {
 
 /*** SLOWER, ROBUST VERSION (runtime ~ 3s) ***/
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
-// window.countNRooksSolutions = function(n) {
-//   var solutionCount = 0;
+window.countNRooksSolutions = function(n) {
+  var solutionCount = 0;
 
-//   var findNextStep = function(existingBoard, nextRow) {
-//     if (nextRow === n && !existingBoard.hasAnyRooksConflicts()) {
-//       solutionCount++;
-//     } else {
-//       for (var i = 0; i < n; i++) {
-//         if (nextRow === 0 && i > 0) {
-//           return;
-//         }
-//         var permutation = [];
-//         while (permutation.length < n) {
-//           permutation.push(0);
-//         }
-//         permutation[i] = 1;
-//         var nextBoard = new Board(existingBoard.rows());
-//         if (!nextBoard.set(nextRow, permutation).hasAnyRooksConflicts()) {
-//           findNextStep(nextBoard, nextRow + 1);
-//         }
-//       }
-//     }
-//   };
+  var findNextStep = function(existingBoard, nextRow) {
+    if (nextRow === n && !existingBoard.hasAnyRooksConflicts()) {
+      solutionCount++;
+    } else {
+      for (var i = 0; i < n; i++) {
+        if (nextRow === 0 && i > 0) {
+          return;
+        }
+        var permutation = [];
+        while (permutation.length < n) {
+          permutation.push(0);
+        }
+        permutation[i] = 1;
+        var nextBoard = new Board(existingBoard.rows());
+        if (!nextBoard.set(nextRow, permutation).hasAnyRooksConflicts()) {
+          findNextStep(nextBoard, nextRow + 1);
+        }
+      }
+    }
+  };
 
-//   var newBoard = new Board({n: n});
-//   findNextStep(newBoard, 0);
+  var newBoard = new Board({n: n});
+  findNextStep(newBoard, 0);
 
-//   console.log('Number of solutions for ' + n + ' rooks:', solutionCount * n);
-//   return solutionCount * n;
-// };
+  console.log('Number of solutions for ' + n + ' rooks:', solutionCount * n);
+  return solutionCount * n;
+};
 
 /*** MATHEMATICAL (QUICK) VERSION ***/
-window.countNRooksSolutions = function(n) {
-  return n === 1 ? 1 : n * countNRooksSolutions(n - 1);
-};
+// window.countNRooksSolutions = function(n) {
+//   return n === 1 ? 1 : n * countNRooksSolutions(n - 1);
+// };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n) {
@@ -142,5 +142,32 @@ window.countNQueensSolutions = function(n) {
   findNextStep(newBoard, 0);
 
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
+  return solutionCount;
+};
+
+window.countNQueensBitwise = function(n) {
+  var solutionCount = 0;
+  var complete = Math.pow(2, n) - 1;
+
+  var findNextStep = function(col, ld, rd) {
+    if (col === complete) {
+      solutionCount++;
+    } else {
+      var possibilities = ~(col | ld | rd) & complete;
+      while (possibilities) {
+        var candidate = possibilities & -possibilities;
+        possibilities -= candidate;
+        //determine ld and rd
+        var newCol = col | candidate;
+        var newLD = (ld | candidate) >> 1;
+        var newRD = (rd | candidate) << 1;
+        //recurse
+        findNextStep(newCol, newLD, newRD);
+      }
+    }
+  };
+
+  findNextStep(0, 0, 0);
+
   return solutionCount;
 };
