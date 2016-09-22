@@ -19,7 +19,6 @@ window.findNRooksSolution = function(n) {
   var findNextStep = function(existingBoard, nextRow) {
     if (nextRow === n && !existingBoard.hasAnyRooksConflicts()) {
       solution = existingBoard.rows();
-      return;
     } else {
       for (var i = 0; i < n; i++) {
         var permutation = [];
@@ -27,8 +26,11 @@ window.findNRooksSolution = function(n) {
           permutation.push(0);
         }
         permutation[i] = 1;
-        if (!existingBoard.set(nextRow, permutation).hasAnyRooksConflicts()) {
-          findNextStep(existingBoard, nextRow + 1);
+        var nextBoard = new Board(existingBoard.rows());
+        if (!nextBoard.set(nextRow, permutation).hasAnyRooksConflicts()) {
+          findNextStep(nextBoard, nextRow + 1);
+        } else {
+          return;
         }
       }
     }
@@ -75,16 +77,39 @@ window.findNRooksSolution = function(n) {
 
 /*** MATHEMATICAL (QUICK) VERSION ***/
 window.countNRooksSolutions = function(n) {
-  if (n === 1) {
-    return 1;
-  } else {
-    return n * countNRooksSolutions(n - 1);
-  }
+  return n === 1 ? 1 : n * countNRooksSolutions(n - 1);
 };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n) {
-  var solution = undefined; //fixme
+  var solution;
+
+  var findNextStep = function(existingBoard, nextRow) {
+    if (nextRow === n && !existingBoard.hasAnyQueensConflicts()) {
+      solution = existingBoard.rows();
+      return;
+    } else {
+      for (var i = 0; i < n; i++) {
+        var permutation = [];
+        while (permutation.length < n) {
+          permutation.push(0);
+        }
+        permutation[i] = 1;
+        var newBoard = new Board(existingBoard.rows());
+        if (!newBoard.set(nextRow, permutation).hasAnyQueensConflicts()) {
+          findNextStep(newBoard, nextRow + 1);
+        }
+      }
+    }
+  };
+
+  var newBoard = new Board({n: n});
+  findNextStep(newBoard, 0);
+
+  if (solution === undefined) {
+    var emptyBoard = new Board({n: n});
+    solution = emptyBoard.rows();
+  }
 
   console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
   return solution;
